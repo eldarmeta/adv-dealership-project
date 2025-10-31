@@ -1,4 +1,5 @@
 package com.pluralsight;
+
 import com.pluralsight.model.Car;
 import com.pluralsight.model.Sale;
 
@@ -10,9 +11,11 @@ public class Main {
 
     private static final String INVENTORY = "./inventory.csv";
     private static final String SALES     = "./sales.csv";
-
     private static final HashMap<String, Car> inventory = new HashMap<>();
     private static final ArrayList<Sale> sales = new ArrayList<>();
+    private static final String CONTRACTS = "./contracts.csv";
+    private static com.pluralsight.data.ContractFileManager contractFileManager =
+            new com.pluralsight.data.ContractFileManager(CONTRACTS);
 
     public static void main(String[] args) {
         loadInventory();
@@ -25,6 +28,7 @@ public class Main {
             System.out.println("2) List available");
             System.out.println("3) Sell car");
             System.out.println("4) Sales report (count + total)");
+            System.out.println("5) Sell/Lease vehicle");
             System.out.println("0) Exit");
             System.out.print("Choose: ");
             String c = in.nextLine().trim();
@@ -33,8 +37,8 @@ public class Main {
             else if (c.equals("2")) listAvailableFlow();
             else if (c.equals("3")) sellCarFlow(in);
             else if (c.equals("4")) salesReportFlow();
-            else if (c.equals("0")) { System.out.println("Bye!");
-                break; }
+            else if (c.equals("5")) sellOrLeaseFlow();
+            else if (c.equals("0")) { System.out.println("Bye!"); break; }
             else System.out.println("Unknown");
         }
     }
@@ -51,7 +55,7 @@ public class Main {
                 if (!headerChecked) {
                     headerChecked = true;
                     String lower = line.toLowerCase(Locale.ROOT);
-                    if (lower.startsWith("vin,")) continue; // skip header row
+                    if (lower.startsWith("vin,")) continue;
                 }
                 String[] t = line.split(",", -1);
                 String vin = t[0];
@@ -79,7 +83,7 @@ public class Main {
                 if (!headerChecked) {
                     headerChecked = true;
                     String lower = line.toLowerCase(Locale.ROOT);
-                    if (lower.startsWith("saleid,")) continue; // skip header row
+                    if (lower.startsWith("saleid,")) continue;
                 }
                 String[] t = line.split(",", -1);
                 String saleId = t[0];
@@ -110,7 +114,6 @@ public class Main {
 
     private static void appendSaleRow(Sale s) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(SALES, true))) {
-            // если файл пустой и хочешь заголовок — можно дописать руками один раз
             String row = s.getSaleId() + "," + s.getVin() + "," + s.getCustomerId() + ","
                     + s.getSalespersonId() + "," + s.getFinalPrice() + "," + s.getDateTimeIso();
             bw.write(row);
@@ -169,5 +172,58 @@ public class Main {
         for (int i = 0; i < sales.size(); i++) total += sales.get(i).getFinalPrice();
         System.out.println("Sales count: " + sales.size());
         System.out.println("Total revenue: " + total);
+    }
+
+    private static void sellOrLeaseFlow() {
+        Scanner in = new Scanner(System.in);
+
+        System.out.print("Enter VIN: ");
+        String vin = in.nextLine().trim();
+        com.pluralsight.model.Car car = inventory.get(vin);
+        if (car == null) {
+            System.out.println("No car with this VIN in inventory.");
+            return;
+        }
+        if (car.isSold()) {
+            System.out.println("This car is already marked as sold.");
+            return;
+        }
+
+        System.out.print("Date (YYYYMMDD): ");
+        String date = in.nextLine().trim();
+
+        System.out.print("Customer name: ");
+        String name = in.nextLine().trim();
+
+        System.out.print("Customer email: ");
+        String email = in.nextLine().trim();
+
+        System.out.print("Type (S=Sale, L=Lease): ");
+        String type = in.nextLine().trim().toUpperCase();
+
+        com.pluralsight.contracts.Contract contract;
+
+        if ("S".equals(type)) {
+            System.out.print("Finance? (Y/N): ");
+            boolean fin = in.nextLine().trim().equalsIgnoreCase("Y");
+            contract = new com.pluralsight.contracts.SalesContract(date, name, email, car, fin);
+        } else if ("L".equals(type)) {
+            int currentYear = java.time.LocalDate.now().getYear();
+            if (currentYear - car.getYear() > 3) {
+                System.out.println("Cannot lease vehicles older than 3 years.");
+                return;
+            }
+            contract = new com.pluralsight.contracts.LeaseContract(date, name, email, car);
+        } else {
+            System.out.println("Unknown type. Use S or L.");
+            return;
+        }
+
+        contractFileManager.saveContract(contract);
+        inventory.remove(vin);
+        saveInventoryAll();
+
+        System.out.printf("Contract saved. Total: %.2f, Monthly: %.2f%n",
+                contract.getTotalPrice(), contract.getMonthlyPayment());
     }
 }
