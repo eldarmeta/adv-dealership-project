@@ -1,8 +1,8 @@
 package com.pluralsight.contracts;
 
-import  com.pluralsight.model.Car;
+import com.pluralsight.model.Car;
 
-public class SalesContract extends  Contract {
+public class SalesContract extends Contract {
     private static final double SALES_TAX_RATE = 0.05;
     private static final double RECORDING_FEE = 100.0;
 
@@ -22,30 +22,20 @@ public class SalesContract extends  Contract {
         double tax = base * SALES_TAX_RATE;
         return base + tax + RECORDING_FEE + processingFee;
     }
-    @Override
-    public double getMonthlyPaymant() {
-        if (!financed) return 0.0;
 
+    @Override
+    public double getMonthlyPayment() {
+        if (!financed) return 0.0;
         double financedAmount = getTotalPrice();
         boolean isBig = getCar().getPrice() >= 10_000;
-
-        double apr = is Big ? 0.0425 : 0.0525;
+        double apr = isBig ? 0.0425 : 0.0525;
         int months = isBig ? 48 : 24;
         double r = apr / 12.0;
-
-        return  financedAmount * r / (1 - Math.pow(1 + r, -months));
+        return financedAmount * r / (1 - Math.pow(1 + r, -months));
     }
 
-    public boolean isFinanced() {
-        return financed;
-    }
-    public double getProcessingFee() {
-        return processingFee;
-    }
-    public double getRecordingFee() {
-        return RECORDING_FEE;
-    }
-    public  double getSalesTaxRate() {
-        return  getCar().getPrice() * SALES_TAX_RATE;
-    }
+    public boolean isFinanced() { return financed; }
+    public double getProcessingFee() { return processingFee; }
+    public double getRecordingFee() { return RECORDING_FEE; }
+    public double getSalesTaxAmount() { return getCar().getPrice() * SALES_TAX_RATE; }
 }

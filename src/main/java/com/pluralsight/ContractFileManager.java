@@ -9,7 +9,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 
-
 public class ContractFileManager {
 
     private final String contractsPath;
@@ -23,8 +22,7 @@ public class ContractFileManager {
         String line = (c instanceof SalesContract)
                 ? buildSaleLine((SalesContract) c)
                 : buildLeaseLine((LeaseContract) c);
-
-        try (FileWriter fw = new FileWriter(contractsPath, true)) { // append = true
+        try (FileWriter fw = new FileWriter(contractsPath, true)) {
             fw.write(line);
             if (!line.endsWith("\n")) fw.write("\n");
         } catch (IOException e) {
@@ -32,21 +30,23 @@ public class ContractFileManager {
         }
     }
 
-
     private String buildCommonPrefix(String type, Contract c) {
         Car v = c.getCar();
+        String vehicleType = "";
+        String color = "";
+        String odometer = "";
         return String.join("|",
                 type,
                 nz(c.getDate()),
                 nz(c.getCustomerName()),
                 nz(c.getCustomerEmail()),
-                String.valueOf(v.getVin()),
+                nz(v.getVin()),
                 String.valueOf(v.getYear()),
                 nz(v.getMake()),
                 nz(v.getModel()),
-                nz(v.getVehicleType()),
-                nz(v.getColor()),
-                String.valueOf(v.getOdometer()),
+                vehicleType,
+                color,
+                odometer,
                 DF.format(v.getPrice())
         );
     }

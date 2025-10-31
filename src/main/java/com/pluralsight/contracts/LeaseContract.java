@@ -2,9 +2,9 @@ package com.pluralsight.contracts;
 
 import com.pluralsight.model.Car;
 
-public class LeaseContract extends  Contract {
-    private  final  double expectedEndingValue;
-    private  final  double leaseFee;
+public class LeaseContract extends Contract {
+    private final double expectedEndingValue;
+    private final double leaseFee;
 
     public LeaseContract(String date, String customerName, String customerEmail, Car car) {
         super(date, customerName, customerEmail, car);
@@ -18,14 +18,14 @@ public class LeaseContract extends  Contract {
     }
 
     @Override
-    public  double getMonthlyPaymnet() {
+    public double getMonthlyPayment() {
         double cap = getCar().getPrice();
         double residual = expectedEndingValue;
         double r = 0.04 / 12.0;
-                int n = 36;
-
+        int n = 36;
         return (cap - residual) * (r / (1 - Math.pow(1 + r, -n))) + (residual * r);
     }
-    public  double getExpectedEndingValue() { return expectedEndingValue; }
-    public  double getLeaseFee() {return  leaseFee; }
+
+    public double getExpectedEndingValue() { return expectedEndingValue; }
+    public double getLeaseFee() { return leaseFee; }
 }
