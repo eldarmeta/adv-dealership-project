@@ -1,1 +1,2 @@
-SaleId,VIN,CustomerId,SalespersonId,FinalPrice,DateTime
+saleId,vin,customerId,salespersonId,finalPrice,dateTimeIso
+40a59bc6-4e42-4995-9a8a-7d8632b28b96,1212,1717,3103,52000.0,2025-10-31T15:38:53.773043
