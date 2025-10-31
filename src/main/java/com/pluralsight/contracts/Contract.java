@@ -22,7 +22,7 @@ public abstract class Contract {
         return customerName;
     }
     public String getCustomerEmail() {
-        return getCustomerEmail;
+        return customerEmail;
     }
     public Car getCar() {
         return car;
